@@ -21,6 +21,7 @@ var PostSchema = new Schema({
   timestamp: { type: Date, default: Date.now },
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+  isPublished: { type: Boolean, default: true },
 })
 
 // Virtual for post's URL

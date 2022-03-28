@@ -20,7 +20,6 @@ var UserSchema = new Schema({
   password: {
     type: String,
     required: true,
-    maxLength: 20,
     minlength: 3,
     trim: true,
   },
