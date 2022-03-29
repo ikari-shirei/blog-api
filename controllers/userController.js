@@ -6,6 +6,8 @@ const { body, validationResult } = require('express-validator')
 var bcrypt = require('bcryptjs')
 require('dotenv').config()
 
+const jwt = require('jsonwebtoken')
+
 exports.user_login_get = function (req, res, next) {
   res.json({ user_login_get: 'not implemented ' })
 }
@@ -54,8 +56,17 @@ exports.user_login_post = [
             return next(err)
           }
 
-          // User logged in succesfully
-          res.json(user)
+          const tokenInfo = { username: user.username, email: user.email }
+
+          // User logged in succesfully, send token
+          const opts = { expiresIn: '1 hour' }
+          const secret = process.env.TOKEN_KEY
+          const token = jwt.sign({ tokenInfo }, secret, opts)
+
+          res.json({
+            message: 'Logged in',
+            token,
+          })
         })
       })
     }
