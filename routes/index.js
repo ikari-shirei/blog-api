@@ -2,6 +2,9 @@ var express = require('express')
 var router = express.Router()
 
 const userController = require('../controllers/userController')
+const passport = require('passport')
+
+require('../config/passport')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -23,7 +26,11 @@ router.get('/register', userController.user_register_get)
 router.post('/register', userController.user_register_post)
 
 // Profile get
-router.get('/profile', userController.user_profile_get)
+router.get(
+  '/profile',
+  passport.authenticate('jwt', { session: false }),
+  userController.user_profile_get
+)
 
 // Account delete get
 router.get('/delete-account', userController.user_delete_get)

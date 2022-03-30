@@ -56,9 +56,9 @@ exports.user_login_post = [
             return next(err)
           }
 
+          // User logged in succesfully, send token
           const tokenInfo = { username: user.username, email: user.email }
 
-          // User logged in succesfully, send token
           const opts = { expiresIn: '1 hour' }
           const secret = process.env.TOKEN_KEY
           const token = jwt.sign({ tokenInfo }, secret, opts)
