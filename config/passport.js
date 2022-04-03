@@ -11,12 +11,14 @@ opts.secretOrKey = process.env.TOKEN_KEY
 
 passport.use(
   new JwtStrategy(opts, function (jwt_payload, done) {
+    console.log(jwt_payload)
     User.findOne({ email: jwt_payload.tokenInfo.email }, function (err, user) {
       if (err) {
         return done(err, false)
       }
 
       if (user) {
+        console.log('true')
         return done(null, user)
       } else {
         return done(null, false)

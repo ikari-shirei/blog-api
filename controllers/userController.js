@@ -44,16 +44,23 @@ exports.user_login_post = [
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      res.json(errors.array())
+      res.status(400).json(errors.array())
     } else {
       User.findOne({ email: req.body.email }).exec(function (err, user) {
         if (err) {
           return next(err)
         }
 
-        bcrypt.compare(req.body.password, user.password, (err) => {
+        bcrypt.compare(req.body.password, user.password, (err, result) => {
           if (err) {
             return next(err)
+          }
+
+          // Password or email is wrong
+          if (!result) {
+            res.status(401)
+            const newErr = new Error('Wrong email or password.')
+            return next(newErr)
           }
 
           // User logged in succesfully, send token
@@ -122,7 +129,7 @@ exports.user_register_post = [
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      res.json(errors.array())
+      res.status(400).json(errors.array())
       return
     } else {
       bcrypt.hash(req.body.password, 10, function (err, hash) {
