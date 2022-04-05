@@ -2,6 +2,8 @@ var express = require('express')
 var router = express.Router()
 
 const userController = require('../controllers/userController')
+const postController = require('../controllers/postController')
+
 const passport = require('passport')
 
 require('../config/passport')
@@ -13,29 +15,39 @@ router.get('/', function (req, res, next) {
 
 /* USER */
 
-// Login get
-router.get('/login', userController.user_login_get)
+// Auth
+router.get(
+  '/auth',
+  passport.authenticate('jwt', { session: false }),
+  userController.auth
+)
 
 // Login post
 router.post('/login', userController.user_login_post)
 
-// Register get
-router.get('/register', userController.user_register_get)
-
 // Register post
 router.post('/register', userController.user_register_post)
 
-// Profile get
-router.get(
-  '/profile',
+// Add bookmark post post
+router.post(
+  '/post/:id/bookmark',
   passport.authenticate('jwt', { session: false }),
-  userController.user_profile_get
+  userController.user_bookmark_post
 )
 
-// Account delete get
-router.get('/delete-account', userController.user_delete_get)
+// Add bookmark post post
+router.get(
+  '/profile/bookmarks',
+  passport.authenticate('jwt', { session: false }),
+  userController.user_bookmarks_get
+)
 
 // Account delete
 router.delete('/delete-account', userController.user_delete_delete)
+
+/* POST */
+
+// Get all posts
+router.get('/posts', postController.all_post_get)
 
 module.exports = router

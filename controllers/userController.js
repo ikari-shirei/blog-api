@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const Post = require('../models/post')
 
 const async = require('async')
 const { body, validationResult } = require('express-validator')
@@ -7,13 +8,10 @@ var bcrypt = require('bcryptjs')
 require('dotenv').config()
 
 const jwt = require('jsonwebtoken')
+const user = require('../models/user')
 
-exports.user_login_get = function (req, res, next) {
-  res.json({ user_login_get: 'not implemented ' })
-}
-
-exports.user_register_get = function (req, res, next) {
-  res.json({ user_register_get: 'not implemented' })
+exports.auth = function (req, res, next) {
+  res.json({ user: req.user })
 }
 
 exports.user_login_post = [
@@ -159,12 +157,81 @@ exports.user_register_post = [
   },
 ]
 
-exports.user_profile_get = function (req, res, next) {
-  res.json({ user_profile_get: 'not implemented' })
-}
+exports.user_bookmark_post = [
+  body('post_id').trim().escape(),
 
-exports.user_delete_get = function (req, res, next) {
-  res.json({ user_delete_get: 'not implemented' })
+  function (req, res, next) {
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+      res.status(400).json(errors.array())
+      return
+    } else {
+      // Find post
+      Post.findById(req.body.post_id).exec(function (err, result) {
+        if (err) {
+          return next(err)
+        }
+
+        // Find user
+        User.findById(req.user._id)
+          .populate('bookmarks')
+          .exec(function (err, user) {
+            if (err) {
+              return next(err)
+            }
+
+            // Add bookmarked post to users bookmark collection
+            let newUser = {
+              _id: user._id,
+            }
+
+            const isExist = user.bookmarks.every((bookmark) => {
+              return String(bookmark._id) !== String(result._id)
+            })
+
+            if (isExist) {
+              newUser.bookmarks = [...user.bookmarks, result]
+              console.log(1)
+            } else {
+              newUser.bookmarks = user.bookmarks.filter((bookmark) => {
+                return String(bookmark._id) !== String(result._id)
+              })
+              console.log(3)
+            }
+
+            console.log(newUser.bookmarks.length, 'new user book')
+
+            // Update user
+            User.findByIdAndUpdate(req.user, newUser, function (err) {
+              if (err) {
+                return next(err)
+              }
+
+              // Send result
+              res.status(200).json({
+                msg: 'Bookmark is saved',
+                user_bookmarks: user.bookmarks,
+                bookmarked_post: result,
+                currentUser: req.user,
+              })
+            })
+          })
+      })
+    }
+  },
+]
+
+exports.user_bookmarks_get = function (req, res, next) {
+  User.findById(req.user._id)
+    .populate('bookmarks')
+    .exec(function (err, result) {
+      if (err) {
+        return next(err)
+      }
+
+      res.json({ bookmarks: result.bookmarks })
+    })
 }
 
 exports.user_delete_delete = function (req, res, next) {
