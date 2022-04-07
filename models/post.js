@@ -17,7 +17,6 @@ var PostSchema = new Schema({
     type: String,
     required: true,
   },
-  tags: [{ type: String }],
   timestamp: { type: Date, default: Date.now },
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],

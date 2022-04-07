@@ -50,4 +50,7 @@ router.delete('/delete-account', userController.user_delete_delete)
 // Get all posts
 router.get('/posts', postController.all_post_get)
 
+// Get required post
+router.get('/post/:id', postController.selected_post_get)
+
 module.exports = router

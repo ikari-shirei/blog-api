@@ -8,7 +8,6 @@ var bcrypt = require('bcryptjs')
 require('dotenv').config()
 
 const jwt = require('jsonwebtoken')
-const user = require('../models/user')
 
 exports.auth = function (req, res, next) {
   res.json({ user: req.user })
@@ -181,26 +180,25 @@ exports.user_bookmark_post = [
               return next(err)
             }
 
-            // Add bookmarked post to users bookmark collection
+            // Add or remove bookmarked post to users bookmark collection
             let newUser = {
               _id: user._id,
             }
 
+            // Check if this post exist or not as a bookmark
             const isExist = user.bookmarks.every((bookmark) => {
               return String(bookmark._id) !== String(result._id)
             })
 
+            // If it doesn't exist add it
             if (isExist) {
               newUser.bookmarks = [...user.bookmarks, result]
-              console.log(1)
             } else {
+              // If it exist, remove it
               newUser.bookmarks = user.bookmarks.filter((bookmark) => {
                 return String(bookmark._id) !== String(result._id)
               })
-              console.log(3)
             }
-
-            console.log(newUser.bookmarks.length, 'new user book')
 
             // Update user
             User.findByIdAndUpdate(req.user, newUser, function (err) {
@@ -211,9 +209,6 @@ exports.user_bookmark_post = [
               // Send result
               res.status(200).json({
                 msg: 'Bookmark is saved',
-                user_bookmarks: user.bookmarks,
-                bookmarked_post: result,
-                currentUser: req.user,
               })
             })
           })
