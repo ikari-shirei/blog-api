@@ -28,18 +28,18 @@ router.post('/login', userController.user_login_post)
 // Register post
 router.post('/register', userController.user_register_post)
 
-// Add bookmark post post
-router.post(
-  '/post/:id/bookmark',
-  passport.authenticate('jwt', { session: false }),
-  userController.user_bookmark_post
-)
-
-// Add bookmark post post
+// Get user bookmarks
 router.get(
-  '/profile/bookmarks',
+  '/user/:id/bookmarks', // user id bookmarks
   passport.authenticate('jwt', { session: false }),
   userController.user_bookmarks_get
+)
+
+// Get user comments
+router.get(
+  '/user/:id/comments',
+  passport.authenticate('jwt', { session: false }),
+  userController.user_comments_get
 )
 
 // Account delete
@@ -52,5 +52,19 @@ router.get('/posts', postController.all_post_get)
 
 // Get required post
 router.get('/post/:id', postController.selected_post_get)
+
+// Add or remove bookmark post post
+router.post(
+  '/post/:id/bookmark',
+  passport.authenticate('jwt', { session: false }),
+  userController.user_bookmark_post
+)
+
+// Add or remove like post post
+router.post(
+  '/post/:id/like',
+  passport.authenticate('jwt', { session: false }),
+  userController.user_like_post
+)
 
 module.exports = router

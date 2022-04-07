@@ -217,6 +217,52 @@ exports.user_bookmark_post = [
   },
 ]
 
+exports.user_like_post = [
+  body('post_id').trim().escape(),
+
+  function (req, res, next) {
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+      res.status(400).json(errors.array())
+      return
+    } else {
+      Post.findById(req.body.post_id).exec(function (err, targetPost) {
+        if (err) {
+          return next(err)
+        }
+
+        const isLikeExist = targetPost.likes.some((like) => {
+          return String(like) === String(req.user._id)
+        })
+
+        const newPost = {
+          _id: targetPost._id,
+        }
+
+        if (!isLikeExist) {
+          newPost.likes = [...targetPost.likes, req.user._id]
+        } else {
+          newPost.likes = targetPost.likes.filter((like) => {
+            return String(like) !== String(req.user._id)
+          })
+        }
+
+        Post.findByIdAndUpdate(targetPost._id, newPost, function (err) {
+          if (err) {
+            return next(err)
+          }
+
+          console.log(targetPost, newPost)
+          res.status(200).json({
+            msg: 'Like added / removed',
+          })
+        })
+      })
+    }
+  },
+]
+
 exports.user_bookmarks_get = function (req, res, next) {
   User.findById(req.user._id)
     .populate('bookmarks')
@@ -226,6 +272,18 @@ exports.user_bookmarks_get = function (req, res, next) {
       }
 
       res.json({ bookmarks: result.bookmarks })
+    })
+}
+
+exports.user_comments_get = function (req, res, next) {
+  User.findById(req.user._id)
+    /*  .populate('comments') */
+    .exec(function (err, result) {
+      if (err) {
+        return next(err)
+      }
+      console.log(result, 'resulto')
+      res.json({ comments: result.comments })
     })
 }
 
