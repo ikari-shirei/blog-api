@@ -12,12 +12,17 @@ exports.all_post_get = function (req, res, next) {
 }
 
 exports.selected_post_get = function (req, res, next) {
-  Post.findById(req.params.id).exec(function (err, result) {
-    if (err) {
-      next(err)
-    }
+  Post.findById(req.params.id)
+    .populate({
+      path: 'comments',
+      populate: { path: 'user' },
+    })
+    .exec(function (err, result) {
+      if (err) {
+        next(err)
+      }
 
-    // Successful
-    res.json({ post: result })
-  })
+      // Successful
+      res.json({ post: result })
+    })
 }

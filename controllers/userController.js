@@ -42,6 +42,7 @@ exports.user_login_post = [
 
     if (!errors.isEmpty()) {
       res.status(400).json(errors.array())
+      return
     } else {
       User.findOne({ email: req.body.email }).exec(function (err, user) {
         if (err) {

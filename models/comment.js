@@ -10,7 +10,6 @@ var CommentSchema = new Schema({
     maxLength: 1000,
   },
   timestamp: { type: Date, default: Date.now },
-  likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 })
 
 //Export model

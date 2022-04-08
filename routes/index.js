@@ -3,6 +3,7 @@ var router = express.Router()
 
 const userController = require('../controllers/userController')
 const postController = require('../controllers/postController')
+const commentController = require('../controllers/commentController')
 
 const passport = require('passport')
 
@@ -65,6 +66,15 @@ router.post(
   '/post/:id/like',
   passport.authenticate('jwt', { session: false }),
   userController.user_like_post
+)
+
+/* COMMENT */
+
+// Add comment post
+router.post(
+  '/post/:id/comment',
+  passport.authenticate('jwt', { session: false }),
+  commentController.comment_add_post
 )
 
 module.exports = router
