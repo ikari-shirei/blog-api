@@ -49,7 +49,7 @@ router.delete('/delete-account', userController.user_delete_delete)
 /* POST */
 
 // Get all posts
-router.get('/posts', postController.all_post_get)
+router.get('/posts', postController.published_posts_get)
 
 // Get required post
 router.get('/post/:id', postController.selected_post_get)
@@ -66,6 +66,20 @@ router.post(
   '/post/:id/like',
   passport.authenticate('jwt', { session: false }),
   userController.user_like_post
+)
+
+// Admin create post
+router.post(
+  '/admin/post',
+  passport.authenticate('jwt', { session: false }),
+  postController.admin_post_create_post
+)
+
+// Admin get non published posts
+router.get(
+  '/admin/posts',
+  passport.authenticate('jwt', { session: false }),
+  postController.admin_all_posts_get
 )
 
 /* COMMENT */

@@ -1,5 +1,6 @@
 const User = require('../models/user')
 const Post = require('../models/post')
+const Comment = require('../models/comment')
 
 const async = require('async')
 const { body, validationResult } = require('express-validator')
@@ -277,14 +278,15 @@ exports.user_bookmarks_get = function (req, res, next) {
 }
 
 exports.user_comments_get = function (req, res, next) {
-  User.findById(req.user._id)
-    /*  .populate('comments') */
+  Comment.find({ user: req.user._id })
+    .populate('user')
     .exec(function (err, result) {
       if (err) {
         return next(err)
       }
+
       console.log(result, 'resulto')
-      res.json({ comments: result.comments })
+      res.json({ comments: result })
     })
 }
 
