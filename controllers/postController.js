@@ -37,7 +37,7 @@ exports.selected_post_get = function (req, res, next) {
 }
 
 exports.admin_post_create_post = [
-  body('title').trim().escape(),
+  body('title').escape(),
   body('message').escape(),
   body('isPublished').escape(),
 
@@ -98,6 +98,113 @@ exports.admin_all_posts_get = function (req, res, next) {
         res.json({ posts: results.posts })
       } else {
         res.status(403).json({ msg: 'Unauthorized' })
+      }
+    }
+  )
+}
+
+exports.admin_post_delete = function (req, res, next) {
+  async.series(
+    {
+      post: function (cb) {
+        Post.findById(req.params.id).exec(cb)
+      },
+      user: function (cb) {
+        User.find({ _id: req.user._id, isAdmin: true }).exec(cb)
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err)
+      }
+
+      const admin = results.user[0]
+
+      if (admin) {
+        Post.findByIdAndDelete({ _id: results.post._id }, function (err) {
+          if (err) {
+            return next(err)
+          }
+
+          res.json({ msg: 'Post is removed' })
+        })
+      }
+    }
+  )
+}
+exports.admin_publish_post = function (req, res, next) {
+  async.series(
+    {
+      post: function (cb) {
+        Post.findById(req.params.id).exec(cb)
+      },
+      user: function (cb) {
+        User.find({ _id: req.user._id, isAdmin: true }).exec(cb)
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err)
+      }
+
+      const updatedPost = new Post({
+        _id: results.post._id,
+        isPublished: true,
+      })
+
+      const admin = results.user[0]
+
+      if (admin) {
+        Post.findOneAndUpdate(
+          { _id: results.post._id },
+          updatedPost,
+          function (err) {
+            if (err) {
+              return next(err)
+            }
+
+            res.json({ msg: 'Post is published' })
+          }
+        )
+      }
+    }
+  )
+}
+
+exports.admin_unpublish_post = function (req, res, next) {
+  async.series(
+    {
+      post: function (cb) {
+        Post.findById(req.params.id).exec(cb)
+      },
+      user: function (cb) {
+        User.find({ _id: req.user._id, isAdmin: true }).exec(cb)
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err)
+      }
+
+      const updatedPost = new Post({
+        _id: results.post._id,
+        isPublished: false,
+      })
+
+      const admin = results.user[0]
+
+      if (admin) {
+        Post.findOneAndUpdate(
+          { _id: results.post._id },
+          updatedPost,
+          function (err) {
+            if (err) {
+              return next(err)
+            }
+
+            res.json({ msg: 'Post is unpublished' })
+          }
+        )
       }
     }
   )

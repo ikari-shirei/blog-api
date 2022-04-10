@@ -82,13 +82,29 @@ router.get(
   postController.admin_all_posts_get
 )
 
-/* COMMENT */
-
-// Add comment post
 router.post(
-  '/post/:id/comment',
+  '/admin/post/:id/delete',
   passport.authenticate('jwt', { session: false }),
-  commentController.comment_add_post
-)
+  postController.admin_post_delete
+),
+  // Admin publish unpublish
+  router.post(
+    '/admin/post/:id/publish',
+    passport.authenticate('jwt', { session: false }),
+    postController.admin_publish_post
+  ),
+  router.post(
+    '/admin/post/:id/unpublish',
+    passport.authenticate('jwt', { session: false }),
+    postController.admin_unpublish_post
+  ),
+  /* COMMENT */
+
+  // Add comment post
+  router.post(
+    '/post/:id/comment',
+    passport.authenticate('jwt', { session: false }),
+    commentController.comment_add_post
+  )
 
 module.exports = router
