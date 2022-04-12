@@ -2,7 +2,6 @@ const User = require('../models/user')
 const Post = require('../models/post')
 const Comment = require('../models/comment')
 
-const async = require('async')
 const { body, validationResult } = require('express-validator')
 
 var bcrypt = require('bcryptjs')
@@ -10,7 +9,7 @@ require('dotenv').config()
 
 const jwt = require('jsonwebtoken')
 
-exports.auth = function (req, res, next) {
+exports.auth = function (req, res) {
   res.json({ user: req.user })
 }
 
@@ -273,7 +272,13 @@ exports.user_bookmarks_get = function (req, res, next) {
         return next(err)
       }
 
-      res.json({ bookmarks: result.bookmarks })
+      const legalBookmarks = result.bookmarks.filter(
+        (bookmark) => bookmark.isPublished === true
+      )
+
+      res.json({
+        bookmarks: legalBookmarks.reverse(),
+      })
     })
 }
 
@@ -285,11 +290,6 @@ exports.user_comments_get = function (req, res, next) {
         return next(err)
       }
 
-      console.log(result, 'resulto')
-      res.json({ comments: result })
+      res.json({ comments: result.reverse() })
     })
-}
-
-exports.user_delete_delete = function (req, res, next) {
-  res.json({ user_delete_delete: 'not implemented' })
 }

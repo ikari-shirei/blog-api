@@ -2,7 +2,6 @@ const Post = require('../models/post')
 const User = require('../models/user')
 const async = require('async')
 const { body, validationResult } = require('express-validator')
-const user = require('../models/user')
 
 // Users get only published posts
 exports.published_posts_get = function (req, res, next) {
@@ -26,6 +25,8 @@ exports.selected_post_get = function (req, res, next) {
       if (err) {
         return next(err)
       }
+
+      result.comments = result.comments.reverse()
 
       // Successful
       if (result.isPublished) {

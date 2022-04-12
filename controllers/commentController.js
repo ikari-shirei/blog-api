@@ -1,4 +1,3 @@
-const User = require('../models/user')
 const Post = require('../models/post')
 const Comment = require('../models/comment')
 
@@ -47,7 +46,7 @@ exports.comment_add_post = [
               return next(err)
             }
 
-            res.json({ post: newPost, comments: newPost.comments })
+            res.json({ post: newPost, comments: newPost.comments.reverse() })
           })
         })
       })

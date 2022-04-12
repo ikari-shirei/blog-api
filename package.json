@@ -26,6 +26,7 @@
     "passport-jwt": "^4.0.0"
   },
   "devDependencies": {
+    "eslint": "^8.13.0",
     "nodemon": "^2.0.15"
   }
 }

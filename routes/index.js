@@ -10,7 +10,7 @@ const passport = require('passport')
 require('../config/passport')
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
   res.render('index', { title: 'Express' })
 })
 
@@ -42,9 +42,6 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   userController.user_comments_get
 )
-
-// Account delete
-router.delete('/delete-account', userController.user_delete_delete)
 
 /* POST */
 
