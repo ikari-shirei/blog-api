@@ -157,6 +157,7 @@ exports.user_register_post = [
   },
 ]
 
+// This is slow
 exports.user_bookmark_post = [
   body('post_id').trim().escape(),
 
@@ -182,9 +183,9 @@ exports.user_bookmark_post = [
             }
 
             // Add or remove bookmarked post to users bookmark collection
-            let newUser = {
+            let newUser = new User({
               _id: user._id,
-            }
+            })
 
             // Check if this post exist or not as a bookmark
             const isExist = user.bookmarks.every((bookmark) => {
@@ -218,6 +219,7 @@ exports.user_bookmark_post = [
   },
 ]
 
+// This is slow too
 exports.user_like_post = [
   body('post_id').trim().escape(),
 
@@ -237,9 +239,9 @@ exports.user_like_post = [
           return String(like) === String(req.user._id)
         })
 
-        const newPost = {
+        const newPost = new Post({
           _id: targetPost._id,
-        }
+        })
 
         if (!isLikeExist) {
           newPost.likes = [...targetPost.likes, req.user._id]

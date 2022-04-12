@@ -1,6 +1,8 @@
 const Post = require('../models/post')
 const Comment = require('../models/comment')
 
+const async = require('async')
+
 const { body, validationResult } = require('express-validator')
 
 exports.comment_add_post = [
@@ -20,36 +22,50 @@ exports.comment_add_post = [
       return
     } else {
       // Validated
-
       let newComment = new Comment({
         message: req.body.message,
         user: req.user._id,
       })
 
-      newComment.save(function (err, savedComment) {
-        if (err) {
-          return next(err)
-        }
+      async.waterfall(
+        [
+          // Save new comment
+          function (cb) {
+            newComment.save(function (err, savedComment) {
+              cb(err, savedComment)
+            })
+          },
+          // Find post
+          function (savedComment, cb) {
+            Post.findById(req.params.id).exec(function (err, targetPost) {
+              let newPost = new Post({
+                _id: targetPost._id,
+                comments: [...targetPost.comments, savedComment._id],
+              })
 
-        Post.findById(req.params.id).exec(function (err, targetPost) {
+              cb(err, targetPost, newPost)
+            })
+          },
+          // Update post
+          function (targetPost, newPost, cb) {
+            Post.findByIdAndUpdate(
+              targetPost._id,
+              newPost,
+              function (err, result) {
+                cb(err, result, newPost)
+              }
+            )
+          },
+        ],
+
+        function (err, result, newPost) {
           if (err) {
             return next(err)
           }
 
-          let newPost = new Post({
-            _id: targetPost._id,
-            comments: [...targetPost.comments, savedComment._id],
-          })
-
-          Post.findByIdAndUpdate(targetPost._id, newPost, function (err) {
-            if (err) {
-              return next(err)
-            }
-
-            res.json({ post: newPost, comments: newPost.comments.reverse() })
-          })
-        })
-      })
+          res.json({ post: newPost, comments: newPost.comments.reverse() })
+        }
+      )
     }
   },
 ]
