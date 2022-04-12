@@ -69,5 +69,3 @@ exports.comment_add_post = [
     }
   },
 ]
-/*
- */

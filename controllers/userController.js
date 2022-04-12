@@ -8,6 +8,7 @@ var bcrypt = require('bcryptjs')
 require('dotenv').config()
 
 const jwt = require('jsonwebtoken')
+const async = require('async')
 
 exports.auth = function (req, res) {
   res.json({ user: req.user })
@@ -157,7 +158,6 @@ exports.user_register_post = [
   },
 ]
 
-// This is slow
 exports.user_bookmark_post = [
   body('post_id').trim().escape(),
 
@@ -168,58 +168,65 @@ exports.user_bookmark_post = [
       res.status(400).json(errors.array())
       return
     } else {
-      // Find post
-      Post.findById(req.body.post_id).exec(function (err, result) {
-        if (err) {
-          return next(err)
-        }
-
-        // Find user
-        User.findById(req.user._id)
-          .populate('bookmarks')
-          .exec(function (err, user) {
-            if (err) {
-              return next(err)
-            }
-
-            // Add or remove bookmarked post to users bookmark collection
-            let newUser = new User({
-              _id: user._id,
+      async.waterfall(
+        [
+          // Find post
+          function (cb) {
+            Post.findById(req.body.post_id).exec(function (err, result) {
+              cb(err, result)
             })
+          },
+          // Find user
+          function (result, cb) {
+            User.findById(req.user._id)
+              .populate('bookmarks')
+              .exec(function (err, user) {
+                // Add or remove bookmarked post to users bookmark collection
+                let newUser = new User({
+                  _id: user._id,
+                })
 
-            // Check if this post exist or not as a bookmark
-            const isExist = user.bookmarks.every((bookmark) => {
-              return String(bookmark._id) !== String(result._id)
-            })
+                const isExist = user.bookmarks.every((bookmark) => {
+                  return String(bookmark._id) !== String(result._id)
+                })
 
-            // If it doesn't exist add it
-            if (isExist) {
-              newUser.bookmarks = [...user.bookmarks, result]
-            } else {
-              // If it exist, remove it
-              newUser.bookmarks = user.bookmarks.filter((bookmark) => {
-                return String(bookmark._id) !== String(result._id)
+                // If it doesn't exist add it
+                if (isExist) {
+                  newUser.bookmarks = [...user.bookmarks, result]
+                } else {
+                  // If it exist, remove it
+                  newUser.bookmarks = user.bookmarks.filter((bookmark) => {
+                    return String(bookmark._id) !== String(result._id)
+                  })
+                }
+
+                cb(err, newUser)
               })
-            }
-
-            // Update user
-            User.findByIdAndUpdate(req.user, newUser, function (err) {
-              if (err) {
-                return next(err)
-              }
-
-              // Send result
-              res.status(200).json({
-                msg: 'Bookmark is saved',
-              })
+          },
+          // Update user bookmarks
+          function (newUser, cb) {
+            User.findByIdAndUpdate(req.user, newUser, function (err, result) {
+              cb(err, result)
             })
+          },
+        ],
+        function (err, result) {
+          if (err) {
+            return next(err)
+          }
+
+          console.log(result)
+
+          // Send result
+          res.status(200).json({
+            msg: 'Bookmark is saved',
           })
-      })
+        }
+      )
     }
   },
 ]
 
-// This is slow too
 exports.user_like_post = [
   body('post_id').trim().escape(),
 
