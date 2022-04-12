@@ -11,6 +11,7 @@ require('dotenv').config()
 
 var indexRouter = require('./routes/index')
 
+var cors = require('cors')
 var app = express()
 
 /* mongoDB */
@@ -24,7 +25,12 @@ db.on('error', console.error.bind(console, 'mongo connection error'))
 mongoose.connection.readyState === 2 ? console.log('MongoDB connected') : ''
 
 /* Middlewares */
-
+app.use(
+  cors({
+    origin: [process.env.FRONTEND, process.env.ADMIN],
+    optionsSuccessStatus: 200,
+  })
+)
 app.use(compression())
 app.use(helmet())
 
